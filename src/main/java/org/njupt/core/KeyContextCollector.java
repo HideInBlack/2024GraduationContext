@@ -118,9 +118,9 @@ public class KeyContextCollector {
         StringBuilder queryResult = new StringBuilder();
         for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
             Document document = indexSearcher.doc(scoreDoc.doc);
-            //这里其实还可以搞一个阈值！大于多少的我们认为是有用得！才会添加进去！
+            //这里其实还可以搞一个阈值！大于多少的我们认为是有用得，才会添加进去
             queryResult.append(document.get("codeContent"));
-//            System.out.println("lineId: " + document.get("lineId") + ", Score: " + scoreDoc.score + " codeContent: " + document.get("codeContent"));
+            System.out.println("lineId: " + document.get("lineId") + ", Score: " + scoreDoc.score + " codeContent: " + document.get("codeContent"));
         }
         return queryResult.toString();
     }
@@ -133,29 +133,27 @@ public class KeyContextCollector {
     }
 
     public static void main(String[] args) throws Exception {
-        //获取key Information
-        List<Map<String, String>> keyInfo1 = KeyInformationCollector.extractTokenTuples("G:\\now\\2024merge\\MergeBERT_Data\\ChatGPTResearch\\exampleData\\acceptA\\100004_3_merged.txt");
-        List<Map<String, String>> keyInfo2 = KeyInformationCollector.extractTokenTuples("G:\\now\\2024merge\\MergeBERT_Data\\ChatGPTResearch\\exampleData\\acceptA\\100004_4_merged.txt");
+        //1.获取key Information
+//        List<Map<String, String>> inputQuery = KeyInformationCollector.extractTokenTuples("G:\\now\\2024merge\\MergeBERT_Data\\ChatGPTResearch\\exampleData\\acceptA\\100004_3_merged.txt");
 
-        //人为输入数据
-//        List<Map<String, String>>  targetTupleList = new ArrayList<>();
-//        Map<String, String> tuple = new HashMap<>();
-//        tuple.put("a_tokens", DzyUtils.newTokenizerToString("filteredEvents.syncTagsFilter(historyManagerParams.getFilterModel());"));//我是第一条测试代码
-//        tuple.put("o_tokens", DzyUtils.newTokenizerToString("eventsRepository.syncTagsFilter(historyManagerParams.getFilter().getTagsFilter());"));//我是第二条测试代码
-//        tuple.put("b_tokens", DzyUtils.newTokenizerToString("filteredEvents.syncTagsFilter(historyManagerParams.getFilter().getTagsFilter());"));//我是第三条测试代码
-//        targetTupleList.add(tuple);
+        //1.人为输入数据(目标查询)
+        List<Map<String, String>>  inputQuery = new ArrayList<>();
+        Map<String, String> tuple = new HashMap<>();
+        tuple.put("a_tokens", DzyUtils.newTokenizerToString("\"filteredEvents\" \".\" \"syncTagsFilter\" \"(\" \"historyManagerParams\" \".\" \"getFilterModel\" \"(\" \")\" \")\" \";\""));//我是第一条测试代码
+        tuple.put("o_tokens", DzyUtils.newTokenizerToString("InitialZoomState getSpanningInterval"));//我是第二条测试代码
+        tuple.put("b_tokens", DzyUtils.newTokenizerToString("EventTypeZoomLevel"));//我是第三条测试代码
+        inputQuery.add(tuple);
 
-        String mergedJava = "G:\\now\\2024merge\\MergeBERT_Data\\ChatGPTResearch\\exampleData\\acceptA\\100004_merged.java";
-        //创建索引文件
+        //2.创建索引文件
         Analyzer analyzer = new StandardAnalyzer();
+        //资料库所在地址
+        String mergedJava = "G:\\now\\2024merge\\MergeBERT_Data\\ChatGPTResearch\\exampleData\\acceptA\\100004_merged.java";
         Directory directory = createBM25(mergedJava, analyzer);
-        //使用索引查询
-        System.out.println(useBM25(directory, keyInfo1, 1, analyzer));
-        System.out.println("------------------------------------------------------------------------------------------------");
-        System.out.println(useBM25(directory, keyInfo2, 1, analyzer));
+        //3.使用索引查询
+        System.out.println(useBM25(directory, inputQuery, 3, analyzer));
 
+        //4.数据流关闭
         directory.close();
-
     }
 
 }
